@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using ClusterClient.Extensions;
 using log4net;
 
 namespace ClusterClient.Clients
@@ -13,8 +14,9 @@ namespace ClusterClient.Clients
         {
         }
 
-        public override async Task<string> ProcessRequestAsync(string query, TimeSpan timeout)
+        protected override async Task<string> ProcessRequestAsyncInternal(string query, TimeSpan timeout)
         {
+            Log.Info($"");
             var uri = ReplicaAddresses[random.Next(ReplicaAddresses.Length)];
             var webRequest = CreateRequest($"{uri}?query={query}", timeout);
             

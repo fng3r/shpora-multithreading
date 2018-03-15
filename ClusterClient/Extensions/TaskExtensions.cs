@@ -1,10 +1,30 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
-namespace ClusterClient
+namespace ClusterClient.Extensions
 {
     public static class TaskExtensions
     {
+        public static async Task<Task<T>> WhenAnySucceded<T>(IEnumerable<Task<T>> tasks)
+        {
+            return await WhenAnySucceded(tasks.ToArray());
+        }
+
+        public static async Task<Task<T>> WhenAnySucceded<T>(params Task<T>[] tasks)
+        {
+            if (tasks.Length == 0)
+                //throw new ArgumentException("empty sequence");
+                return null;
+
+            var task = await Task.WhenAny(tasks);
+            if (task.Status == TaskStatus.RanToCompletion)
+                return task;
+
+            return await WhenAnySucceded(tasks.Where(t => t != task).ToArray());
+        }
+
         public static async Task<T> OnTimeout<T>(this Task<T> task, TimeSpan timeout, Action action)
         {
             await Task.WhenAny(task, Task.Delay(timeout));
@@ -14,9 +34,9 @@ namespace ClusterClient
             return await task;
         }
 
-        public static async Task<T> OnSuccess<T>(this Task<T> task, Action action)
+        public static async Task<T> Then<T>(this Task<T> task, Action action, TimeSpan timeout)
         {
-            await task;
+            await Task.WhenAny(task, Task.Delay(timeout));
             if (task.Status == TaskStatus.RanToCompletion)
                 action();
 

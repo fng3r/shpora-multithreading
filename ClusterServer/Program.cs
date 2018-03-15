@@ -53,7 +53,7 @@ namespace ClusterServer
 				log.InfoFormat("Thread #{0} received request #{1} at {2}",
 					Thread.CurrentThread.ManagedThreadId, currentRequestNum, DateTime.Now.TimeOfDay);
 
-				await Task.Delay(parsedArguments.MethodDuration);
+				await Task.Delay(parsedArguments.MethodDuration, CancellationToken.None);
 
 				var encryptedBytes = GetBase64HashBytes(context.Request.QueryString["query"], Encoding.UTF8);
 				await context.Response.OutputStream.WriteAsync(encryptedBytes, 0, encryptedBytes.Length);
